@@ -1,0 +1,18 @@
+{
+    "toName": "xxx",
+    "toEmail": "xxx@xxx.com",
+    "fromName": "xxx",
+    "fromEmail": "xxx@xxx.com",
+    "amount": "x",
+    "payment": {
+        "cardNumber": "xxxxxxxxxxxxxxxx",
+        "expiration": "xxxx",
+        "CVV": "xxx",
+        "firstName": "xxx",
+        "lastName": "xxx",
+        "streetAddress": "xxxx xxxx xxxx",
+        "zipCode": "xxxxx-xxxx",
+        "email": "xxx@xxx.com",
+        "phoneNumber": "xxx-xxxxxxx"
+    }
+}
