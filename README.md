@@ -15,7 +15,7 @@
 
 1. 克隆这个仓库到本地：
     ```bash
-    git clone https://github.com/your_username/apple-gift-card-automation.git
+    git clone https://github.com/ztm0929/apple-gift-card.git
     ```
 
 2. 进入项目目录：
