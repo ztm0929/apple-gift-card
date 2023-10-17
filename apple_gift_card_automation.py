@@ -96,11 +96,7 @@ def main():
             
             page.wait_for_timeout(3000)            
 
-            # 在点击之前添加断点或日志
-            logging.info("About to click 'Continue to Review'")
             page.click('text=Continue to Review')
-
-            logging.info("Clicked 'Continue to Review', waiting for next selector")
             
             page.wait_for_selector('input[type="checkbox"]')
             page.check('input[type="checkbox"]')
