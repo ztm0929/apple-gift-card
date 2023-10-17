@@ -1,46 +1,64 @@
-import time
-from playwright.sync_api import sync_playwright, TimeoutError, Error
+# 导入标准库
 import json
 import logging
 
-# Setting up logging
+# 导入第三方库
+from playwright.sync_api import sync_playwright, TimeoutError, Error
+
+# 定义全局常量
+URL_GIFTCARD = "https://www.apple.com/shop/buy-giftcard/giftcard"
+CONFIG_FILE_PATH = 'config.json'
+
+# 设置日志
 logging.basicConfig(level=logging.INFO)
 
-# Constants for URLs and selectors
-URL_GIFTCARD = "https://www.apple.com/shop/buy-giftcard/giftcard"
 
 def read_config(file_path):
+    """从指定路径读取配置文件，并返回配置信息"""
     try:
         with open(file_path, 'r') as file:
             return json.load(file)
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         logging.error(f"File {file_path} not found.")
-        exit()
-    except json.JSONDecodeError:
+        raise e
+    except json.JSONDecodeError as e:
         logging.error(f"Invalid JSON format in {file_path}.")
-        exit()
+        raise e
+
 
 def validate_config(config):
+    """验证配置信息是否完整"""
     required_keys = ['toName', 'toEmail', 'fromName', 'fromEmail', 'amount', 'payment']
     for key in required_keys:
         if key not in config:
             logging.error(f"Missing key in config: {key}")
-            exit()
+            raise ValueError(f"Missing key in config: {key}")
+
+
+def fill_input(page, selector, value):
+    """填充输入框"""
+    page.fill(selector, value)
+
 
 def fill_gift_card_info(page, config):
-    page.fill('input[name="toName"]', config['toName'])
-    page.fill('input[name="toEmail"]', config['toEmail'])
-    page.fill('input[name="fromName"]', config['fromName'])
-    page.fill('input[name="fromEmail"]', config['fromEmail'])
+    """填充礼品卡信息"""
+    fill_input(page, 'input[name="toName"]', config['toName'])
+    fill_input(page, 'input[name="toEmail"]', config['toEmail'])
+    fill_input(page, 'input[name="fromName"]', config['fromName'])
+    fill_input(page, 'input[name="fromEmail"]', config['fromEmail'])
+
 
 def fill_input_by_span_text(page, span_text, value):
+    """通过相关联的span文本找到输入框并填充"""
     input_xpath = f"//span[text()='{span_text}']/preceding-sibling::input[1]"
     page.fill(input_xpath, value)
 
+
 def main():
-    config = read_config('config.json')
+    """主函数"""
+    config = read_config(CONFIG_FILE_PATH)
     validate_config(config)
-    
+
     try:
         with sync_playwright() as p, p.chromium.launch(headless=False) as browser:
             page = browser.new_page()
@@ -61,10 +79,11 @@ def main():
             page.wait_for_selector('text=Continue as Guest')
             with page.expect_navigation():
                 page.click('text=Continue as Guest')
+            
             page.wait_for_selector('text=Credit or Debit Card')
             page.click('text=Credit or Debit Card')
             
-            # Filling the payment details
+            # 填写付款详细信息
             fill_input_by_span_text(page, 'Credit/Debit Card Number', config['payment']['cardNumber'])
             fill_input_by_span_text(page, 'Expiration MM/YY', config['payment']['expiration'])
             fill_input_by_span_text(page, 'CVV', config['payment']['CVV'])
@@ -75,13 +94,27 @@ def main():
             fill_input_by_span_text(page, 'Zip Code', config['payment']['zipCode'])
             fill_input_by_span_text(page, 'Phone Number', config['payment']['phoneNumber'])
             
+            page.wait_for_timeout(3000)            
+
+            # 在点击之前添加断点或日志
+            logging.info("About to click 'Continue to Review'")
             page.click('text=Continue to Review')
+
+            logging.info("Clicked 'Continue to Review', waiting for next selector")
+            
             page.wait_for_selector('input[type="checkbox"]')
             page.check('input[type="checkbox"]')
-            page.wait_for_selector('text=Place Your Order:nth-match(2)')
-            page.click('text=Place Your Order:nth-match(2)')
+
+            page.wait_for_timeout(3000)
+
+            page.wait_for_selector("#rs-checkout-continue-button-bottom")
+            with page.expect_navigation():
+                page.click("#rs-checkout-continue-button-bottom")
+
+            page.wait_for_timeout(10000)
+            
             logging.info("Gift card purchase was successful.")
-    
+
     except TimeoutError:
         logging.error("Operation timed out.")
     except Error as e:
