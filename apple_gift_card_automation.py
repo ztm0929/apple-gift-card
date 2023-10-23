@@ -101,13 +101,13 @@ def main():
             page.wait_for_selector('input[type="checkbox"]')
             page.check('input[type="checkbox"]')
 
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(1000)
 
             page.wait_for_selector("#rs-checkout-continue-button-bottom")
             with page.expect_navigation():
                 page.click("#rs-checkout-continue-button-bottom")
 
-            page.wait_for_timeout(10000)
+            page.wait_for_timeout(5000)
             
             logging.info("Gift card purchase was successful.")
 
