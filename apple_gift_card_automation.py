@@ -72,7 +72,7 @@ def main():
             page.click('body')
             page.wait_for_selector('input[name="toName"]')
             fill_gift_card_info(page, config)
-            page.click('button[title="Add to Bag"]')
+            page.click('button[data-analytics-title="Add to Bag"]')
             page.wait_for_selector('text=Check Out')
             with page.expect_navigation():
                 page.click('text=Check Out')
